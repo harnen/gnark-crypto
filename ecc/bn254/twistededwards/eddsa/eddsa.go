@@ -157,11 +157,19 @@ func (privKey *PrivateKey) Sign(message []byte, hFunc hash.Hash) ([]byte, error)
 	resRY := res.R.Y.Bytes()
 	resAX := privKey.PublicKey.A.X.Bytes()
 	resAY := privKey.PublicKey.A.Y.Bytes()
-	toWrite := [][]byte{resRX[:], resRY[:], resAX[:], resAY[:], message}
+	toWrite := [][]byte{resRX[:], resRY[:], resAX[:], resAY[:]}
 	for _, bytes := range toWrite {
 		if _, err := hFunc.Write(bytes); err != nil {
 			return nil, err
 		}
+	}
+
+	for i := 0; i < len(message); i += 32 {
+		end := i + 32
+		if end > len(message) {
+			end = len(message)
+		}
+		hFunc.Write(message[i:end])
 	}
 
 	var hramInt big.Int
